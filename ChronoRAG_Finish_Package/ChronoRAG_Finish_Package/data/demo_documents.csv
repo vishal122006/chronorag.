@@ -1,0 +1,13 @@
+doc_id,title,version,effective_date,source,text
+HR-LEAVE,Annual Leave Policy,1.0,2024-01-01,synthetic_demo,Full-time employees receive 20 paid annual leave days each calendar year.
+HR-LEAVE,Annual Leave Policy,2.0,2025-01-01,synthetic_demo,Full-time employees receive 25 paid annual leave days each calendar year.
+EXP-CLAIM,Expense Claim Policy,1.0,2024-02-01,synthetic_demo,Employees must submit an expense claim within 30 calendar days of the purchase.
+EXP-CLAIM,Expense Claim Policy,2.0,2025-03-01,synthetic_demo,Employees must submit an expense claim within 14 calendar days of the purchase.
+REMOTE,Remote Work Policy,1.0,2024-01-15,synthetic_demo,Eligible employees may work remotely up to two days per week with manager approval.
+REMOTE,Remote Work Policy,2.0,2025-01-15,synthetic_demo,Eligible employees may work remotely up to three days per week with manager approval.
+LEARNING,Learning Budget Policy,1.0,2024-01-01,synthetic_demo,The annual learning and development budget is AED 1000 per employee.
+LEARNING,Learning Budget Policy,2.0,2025-01-01,synthetic_demo,The annual learning and development budget is AED 1500 per employee.
+PASSWORD,Password Security Policy,1.0,2023-10-01,synthetic_demo,Employees must change their password every 90 days.
+PASSWORD,Password Security Policy,2.0,2025-04-01,synthetic_demo,Employees should use long unique passphrases and change a password immediately if compromise is suspected; routine 90-day rotation is not required.
+REFUND,Course Refund Policy,1.0,2024-01-01,synthetic_demo,Refund requests must be submitted within 7 days of payment.
+REFUND,Course Refund Policy,2.0,2025-08-01,synthetic_demo,"Refund requests must be submitted within 14 days of payment, subject to the listed eligibility conditions."

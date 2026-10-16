@@ -1,0 +1,20 @@
+ChronoRAG App Flow Smoke Tests
+==============================
+Note: Streamlit API is stubbed; these test app logic/control flow, not an actual browser rendering.
+PASS: ChronoRAG Botswana flow selects the latest stored revision
+PASS: ChronoRAG Botswana flow renders earlier and later changes
+PASS: UI labels detected changes without claiming verified contradictions
+PASS: baseline Botswana flow selects the earlier high-similarity revision
+PASS: baseline flow still displays the version comparison
+PASS: Algeria negative example shows no topic-specific difference
+PASS: ChuChu TV flow selects the latest stored revision
+PASS: ChuChu TV flow renders the ranking change
+PASS: unmatched query shows a helpful warning
+PASS: unmatched query avoids presenting an arbitrary document as a match
+PASS: synthetic demo flow answers from its latest annual leave policy version
+PASS: show-all-versions option renders the loaded revision table
+PASS: valid six-column CSV upload is accepted
+PASS: valid uploaded dataset can be searched and compared
+PASS: malformed uploaded CSV displays a readable validation error
+
+TOTAL: 15 checks passed; 0 failures.
