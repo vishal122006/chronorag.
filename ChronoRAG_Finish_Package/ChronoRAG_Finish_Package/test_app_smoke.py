@@ -29,6 +29,7 @@ class FakeStreamlit(types.ModuleType):
         self.uploaded_file = uploaded_file
         self.show_all_value = show_all
         self.messages: list[tuple[str, str]] = []
+        self.session_state: dict[str, Any] = {}
         self.sidebar = Container()
 
     def _record(self, kind: str, *args: Any, **kwargs: Any):
@@ -60,6 +61,9 @@ class FakeStreamlit(types.ModuleType):
         if label == "Retrieval strategy": return self.strategy
         return options[index]
     def file_uploader(self, *a, **k): return self.uploaded_file
+    def button(self, *a, **k): return False
+    def spinner(self, *a, **k): return Container()
+    def download_button(self, *a, **k): return self._record("download_button", *a, **k)
     def checkbox(self, *a, **k): return self.show_all_value
     def selectbox(self, label, options, **kwargs): return options[0]
     def text_input(self, label, *args, **kwargs): return self.question
