@@ -6,7 +6,7 @@ ChronoRAG is a Streamlit research prototype for comparing ordinary similarity-ba
 
 ## Features
 
-- Choose between a synthetic HR/IT policy demo and historical Wikipedia revision data.
+- Load the included historical Wikipedia revision collection, or upload a versioned CSV.
 - Upload a versioned CSV.
 - Compare **Baseline RAG retrieval** (highest TF-IDF similarity) with **ChronoRAG version-aware retrieval** (find the best-matching document family, then select its latest stored timestamp).
 - Review stored revision history and top retrieval results.
@@ -26,7 +26,7 @@ Uploaded CSV files must contain these columns:
 | `source` | Source or provenance label |
 | `text` | Document content for that revision |
 
-The included real-data collection has 38 revision records across 19 Wikipedia article families (two stored versions per family). These are not complete histories. The synthetic demo has 12 rows and is not a source of real policy advice.
+The included real-data collection has 38 revision records across 19 Wikipedia article families (two stored versions per family). These are not complete histories.
 
 ## Setup on Windows
 
@@ -77,7 +77,7 @@ After `Install_and_Run.bat` has started Streamlit, use `Verify_Live_App.bat` to 
 
 ## Suggested browser smoke test
 
-Choose **Real Wikipedia revisions** and **ChronoRAG version-aware retrieval**, then try:
+Use the included Wikipedia revision collection with **ChronoRAG version-aware retrieval**, then try:
 
 1. `What changed between versions of the COVID-19 pandemic in Africa article regarding Botswana?`
    - Expected: text difference from “more than 100 people” to “more than 50 people”.
