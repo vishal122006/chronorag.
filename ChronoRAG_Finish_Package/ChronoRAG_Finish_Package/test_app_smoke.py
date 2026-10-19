@@ -22,9 +22,8 @@ class Container:
     def __exit__(self, exc_type, exc, tb): return False
 
 class FakeStreamlit(types.ModuleType):
-    def __init__(self, dataset="Real Wikipedia revisions", strategy="ChronoRAG version-aware retrieval", question="", uploaded_file=None, show_all=False):
+    def __init__(self, strategy="ChronoRAG version-aware retrieval", question="", uploaded_file=None, show_all=False):
         super().__init__("streamlit")
-        self.dataset = dataset
         self.strategy = strategy
         self.question = question
         self.uploaded_file = uploaded_file
@@ -58,7 +57,6 @@ class FakeStreamlit(types.ModuleType):
         n = spec if isinstance(spec, int) else len(spec)
         return [Container() for _ in range(n)]
     def radio(self, label, options, index=0, **kwargs):
-        if label == "Choose dataset": return self.dataset
         if label == "Retrieval strategy": return self.strategy
         return options[index]
     def file_uploader(self, *a, **k): return self.uploaded_file
@@ -125,22 +123,17 @@ def main() -> int:
     check("No lexical match was found in this collection" in no_match_out, "unmatched query shows a helpful warning")
     check("ChronoRAG result" not in no_match_out and "Baseline retrieval result" not in no_match_out, "unmatched query avoids presenting an arbitrary document as a match")
 
-    demo_q = "How many annual leave days do full-time employees receive?"
-    demo = run_case(dataset="Synthetic demo", question=demo_q)
-    demo_out = output(demo)
-    check("Annual Leave Policy" in demo_out and "25 paid annual leave days" in demo_out, "synthetic demo flow answers from its latest annual leave policy version")
-
     all_versions = run_case(question=chu_q, show_all=True)
     check("All loaded revisions" in output(all_versions), "show-all-versions option renders the loaded revision table")
 
-    valid_upload = io.BytesIO((ROOT / "data" / "demo_documents.csv").read_bytes())
-    uploaded = run_case(question=demo_q, uploaded_file=valid_upload)
+    valid_upload = io.BytesIO((ROOT / "data" / "real_documents.csv").read_bytes())
+    uploaded = run_case(question=bot_q, uploaded_file=valid_upload)
     uploaded_out = output(uploaded)
-    check("Loaded 12 uploaded document versions" in uploaded_out, "valid six-column CSV upload is accepted")
-    check("Annual Leave Policy" in uploaded_out, "valid uploaded dataset can be searched and compared")
+    check("Loaded 38 uploaded document versions" in uploaded_out, "valid six-column CSV upload is accepted")
+    check("COVID-19 pandemic in Africa" in uploaded_out, "uploaded real revision dataset can be searched and compared")
 
     bad_upload = io.BytesIO(b"title,text\nBad,content\n")
-    malformed = run_case(question=demo_q, uploaded_file=bad_upload)
+    malformed = run_case(question=bot_q, uploaded_file=bad_upload)
     malformed_out = output(malformed)
     check("Could not load documents: Missing required columns" in malformed_out, "malformed uploaded CSV displays a readable validation error")
 
