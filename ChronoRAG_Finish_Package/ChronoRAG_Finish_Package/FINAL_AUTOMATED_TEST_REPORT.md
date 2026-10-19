@@ -1,24 +1,23 @@
 # ChronoRAG Final Automated Test Report
 
-**Test date:** 16 October 2026  
+**Previous test date:** 16 October 2026  
 **Package tested:** `ChronoRAG_Finish_Package`  
-**Overall result:** 86 automated checks passed; 0 failures across the available code/data and simulated HTTP test suites.
+**Post-removal validation status: PENDING.** This report predates the current source changes. Re-run `Run_Tests_Only.bat` before submission. The updated test code is expected to contain 64 core/data checks and 14 app-flow checks, plus the 3 known-case checks and 2 simulated HTTP checks; these expected counts have not been executed in this session.
 
 ## Results
 
 | Test group | Result | Notes |
 |---|---:|---|
-| Python syntax compilation | PASS | App, evaluation scripts, and test scripts compiled successfully. |
-| Core/data/retrieval regression | 66/66 | Includes schema checks, record counts, revision pairs, family selection, chronological selection, known text changes, malformed CSV handling, and topic comparison. |
-| App-flow smoke tests | 15/15 | Streamlit API is stubbed; these check app logic/control flow, not actual UI rendering. |
-| Known change-detection examples | 3/3 | Botswana changed text, Algeria unchanged-topic negative control for these two stored versions, and ChuChu TV ranking change. |
-| HTTP health-check utility | 2/2 | Verified against a simulated local HTTP server, not against a running Streamlit process. |
-| ZIP archive integrity | PASS | The final ZIP was verified with `unzip -t`. |
+| Python syntax compilation | Rerun pending | Compile app, evaluation scripts, and tests after the current source change. |
+| Core/data/retrieval regression | 64 expected; not rerun | Includes schema checks, real revision records, family selection, chronological selection, known text changes, malformed CSV handling, and topic comparison. |
+| App-flow smoke tests | 14 expected; not rerun | Streamlit API is stubbed; these check app logic/control flow, not actual UI rendering. |
+| Known change-detection examples | 3 cases; rerun pending | Botswana changed text, Algeria unchanged-topic negative control for these two stored versions, and ChuChu TV ranking change. |
+| HTTP health-check utility | Prior simulated check: 2/2 | Verified against a simulated local HTTP server, not against a running Streamlit process; rerun if needed. |
+| Package archive | Not applicable | The stale bundled project ZIP was removed; use the current repository download or run from the project folder. |
 
 ## Retrieval evaluation
 
 - Real data: 38 stored revisions across 19 document families (two revisions per family).
-- Synthetic demo: 12 rows.
 - Baseline selected the correct document family for 19/19 standardized title queries.
 - Baseline selected the latest stored revision for 7/19 (36.8%).
 - ChronoRAG selected the latest timestamp for 19/19 (100%) because that is its current version-selection rule.
