@@ -11,7 +11,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 ROOT = Path(__file__).parent
-DEMO_DATA_PATH = ROOT / "data" / "demo_documents.csv"
 REAL_DATA_PATH = ROOT / "data" / "real_documents.csv"
 
 REQUIRED_COLUMNS = ["doc_id", "title", "version", "effective_date", "source", "text"]
@@ -47,11 +46,11 @@ def normalize_documents(df: pd.DataFrame) -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
-def load_documents(dataset_choice: str) -> pd.DataFrame:
-    path = REAL_DATA_PATH if dataset_choice == "Real Wikipedia revisions" else DEMO_DATA_PATH
-    if not path.exists():
-        raise FileNotFoundError(f"Dataset not found: {path}")
-    return normalize_documents(load_csv(str(path)))
+def load_documents() -> pd.DataFrame:
+    """Load only the included historical Wikipedia revision collection."""
+    if not REAL_DATA_PATH.exists():
+        raise FileNotFoundError(f"Real revision dataset not found: {REAL_DATA_PATH}")
+    return normalize_documents(load_csv(str(REAL_DATA_PATH)))
 
 
 def retrieve_documents(query: str, docs: pd.DataFrame, top_k: int = 5) -> pd.DataFrame:
@@ -272,11 +271,7 @@ st.write(
 
 with st.sidebar:
     st.header("Document collection")
-    dataset_choice = st.radio(
-        "Choose dataset",
-        ["Synthetic demo", "Real Wikipedia revisions"],
-        help="The demo contains synthetic policies. The real dataset contains historical Wikipedia revisions.",
-    )
+    st.caption("Default dataset: historical Wikipedia revisions (38 stored revisions across 19 article families).")
     uploaded_file = st.file_uploader("Or upload a versioned CSV", type=["csv"])
     mode = st.radio(
         "Retrieval strategy",
@@ -291,35 +286,23 @@ try:
         documents = normalize_documents(pd.read_csv(uploaded_file, dtype=str).fillna(""))
         st.success(f"Loaded {len(documents)} uploaded document versions.")
     else:
-        documents = load_documents(dataset_choice)
-        if dataset_choice == "Synthetic demo":
-            st.info("Demo mode: these HR and IT policies are synthetic examples, not real organizational policies.")
-        else:
-            st.warning(
-                "Real-data mode: 38 stored revision records across 19 pages. "
-                "The current collection contains only two stored versions per page, not a complete revision history."
-            )
+        documents = load_documents()
+        st.warning(
+            "Using the included real-data collection: 38 stored revision records across 19 Wikipedia article families. "
+            "Only two stored versions per page are included; this is not a complete revision history."
+        )
 except Exception as exc:
     st.error(f"Could not load documents: {exc}")
     st.stop()
 
 st.markdown("### Ask a question")
-if dataset_choice == "Synthetic demo" and uploaded_file is None:
-    sample_questions = [
-        "How many annual leave days do full-time employees receive?",
-        "How many days do employees have to submit an expense claim?",
-        "How many days per week can employees work remotely?",
-        "What is the annual learning budget per employee?",
-        "When should an employee change their password?",
-    ]
-else:
-    sample_questions = [
-        "What changed between versions of Westlife?",
-        "What changed between versions of Westlife?",
-        "What information changed in the COVID-19 pandemic in Africa article?",
-        "What changed between versions of the COVID-19 pandemic in Africa article regarding Algeria?",
-        "What is the latest stored version of ChuChu TV?",
-    ]
+sample_questions = [
+    "What changed between versions of Westlife?",
+    "What does the page say about sales?",
+    "What information changed in the COVID-19 pandemic in Africa article?",
+    "What changed between versions of the COVID-19 pandemic in Africa article regarding Algeria?",
+    "What is the latest stored version of ChuChu TV?",
+]
 
 selected_sample = st.selectbox("Example question", ["Choose an example…"] + sample_questions)
 question = st.text_input(
