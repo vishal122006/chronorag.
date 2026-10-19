@@ -58,9 +58,7 @@ def run() -> int:
     funcs = load_core_functions()
     results: list[str] = []
     data_path = ROOT / "data" / "real_documents.csv"
-    demo_path = ROOT / "data" / "demo_documents.csv"
     real_raw = pd.read_csv(data_path, dtype=str).fillna("")
-    demo_raw = pd.read_csv(demo_path, dtype=str).fillna("")
 
     # File/schema/data integrity.
     check(list(real_raw.columns) == REQUIRED, "real dataset has all 6 required columns", results)
@@ -70,9 +68,6 @@ def run() -> int:
     check(not real.duplicated().any(), "real dataset has no exact duplicate rows", results)
     check(not real.duplicated(["doc_id", "version"]).any(), "real dataset has no duplicate family/version keys", results)
     check(real.effective_date.notna().all() and real.text.str.strip().ne("").all(), "all real revisions have valid timestamps and non-empty text", results)
-    demo = funcs["normalize_documents"](demo_raw)
-    check(len(demo) > 0, "synthetic demo dataset loads successfully", results)
-
     # Each title-based standard query should identify the intended family.
     baseline_latest_count = 0
     baseline_correct_family_count = 0
@@ -136,9 +131,6 @@ def run() -> int:
     check(bot_terms == ["botswana"], "Botswana question extracts the correct topic term", results)
     check(any("more than 100 people" in x for x in b_removed) and any("more than 50 people" in x for x in b_added), "topic-aware comparison detects Botswana change in correct direction", results)
 
-    demo_groups = demo.groupby("doc_id").size()
-    check(len(demo_groups) == 6 and demo_groups.eq(2).all(), "synthetic demo has six policy families with two versions each", results)
-
     no_match = funcs["retrieve_documents"]("zxqvbn kjhgfds qqqqwwwee", real, top_k=5)
     has_match = funcs["retrieve_documents"]("What changed between versions of ChuChu TV?", real, top_k=5)
     check(not funcs["has_relevant_match"](no_match), "all-zero TF-IDF query is recognized as having no lexical match", results)
@@ -158,7 +150,6 @@ def run() -> int:
         "ChronoRAG Automated Test Report",
         "================================",
         f"Real dataset: {len(real)} rows, {real.doc_id.nunique()} document families",
-        f"Synthetic dataset: {len(demo)} rows",
         f"Baseline latest-target revision: {baseline_latest_count}/19",
         f"Baseline correct document family: {baseline_correct_family_count}/19",
         f"ChronoRAG latest stored revision: {all_families_latest_count}/19",

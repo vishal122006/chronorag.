@@ -1,15 +1,15 @@
 # ChronoRAG Final Verification Report
 
-## Automated checks run in the package review environment
+## Verification status after the real-data-only change
 
-**Total automated assertions/checks in the packaged suites: 84 passed, 0 failed** (66 core/data + 15 mocked app-flow + 3 predefined change cases). Python compilation also passed. This count excludes the separate simulated HTTP-checker validation described below.
+**Rerun required before submission.** The counts from the earlier package-review run are no longer current because the app and tests have changed. The updated suites are expected to contain 64 core/data checks, 14 mocked app-flow checks, and 3 predefined change cases, but those counts have not been executed in this session.
 
 | Check | Result | What it verifies |
 |---|---:|---|
-| Python compilation | Passed | Syntax of app, evaluation, and test scripts |
-| Core/data regression suite | 66 passed, 0 failed | Dataset schema/integrity, standardized family lookup, version selection, comparison and input edge cases |
-| App-flow smoke suite | 15 passed, 0 failed | App branches using a mocked Streamlit API; not actual browser rendering |
-| Known-case change evaluation | 3/3 passed | Botswana changed text, ChuChu TV changed ranking text, Algeria unchanged-topic control |
+| Python compilation | Rerun pending | Compile app, evaluation, and test scripts after the current source change |
+| Core/data regression suite | 64 expected; not rerun | Real dataset schema/integrity, standardized family lookup, version selection, comparison and input edge cases |
+| App-flow smoke suite | 14 expected; not rerun | App branches using a mocked Streamlit API; not actual browser rendering |
+| Known-case change evaluation | 3 cases; rerun pending | Botswana changed text, ChuChu TV changed ranking text, Algeria unchanged-topic control |
 | Revision selection evaluation | 19 families | Baseline selected latest target-family revision in 7/19; ChronoRAG latest-stored-version rule selected latest in 19/19 |
 
 ## Interpretation
@@ -24,7 +24,7 @@ A true Streamlit server launch and interactive browser test could not be perform
 
 ## Reproduce locally
 
-1. Double-click `Run_Tests_Only.bat` to install dependencies, compile scripts, run both automated suites, and generate the two evaluation outputs.
+1. Double-click `Run_Tests_Only.bat` to install dependencies, compile scripts, rerun both automated suites, and regenerate the test/evaluation outputs.
 2. Double-click `Install_and_Run.bat` to run the same checks and launch Streamlit.
 3. With the app still running, double-click `Verify_Live_App.bat` to verify the local HTTP health endpoint.
 

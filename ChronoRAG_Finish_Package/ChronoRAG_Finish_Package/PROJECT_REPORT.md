@@ -18,13 +18,12 @@
 
 ## 3. System design
 
-The Streamlit interface loads the synthetic demo, real Wikipedia revision collection, or an uploaded versioned CSV. The input is validated and normalized. Both strategies use TF-IDF scores to find the likely document family. Baseline returns the most similar revision; ChronoRAG selects the latest stored version in the candidate family. The app then displays the selected content and, where a version pair exists, compares the earlier and later text. Topic/section filtering uses keyword heuristics.
+The Streamlit interface loads the included historical Wikipedia revision collection by default, or an uploaded versioned CSV. The input is validated and normalized. Both strategies use TF-IDF scores to find the likely document family. Baseline returns the most similar revision; ChronoRAG selects the latest stored version in the candidate family. The app then displays the selected content and, where a version pair exists, compares the earlier and later text. Topic/section filtering uses keyword heuristics.
 
 ## 4. Data
 
 - Real collection: 38 stored revision records from 19 Wikipedia article families.
 - The included real collection has two versions per family, rather than a complete revision history.
-- Synthetic demo: 12 rows for example HR and IT policies; these are illustrative, not real organizational policies.
 - Required CSV columns: `doc_id`, `title`, `version`, `effective_date`, `source`, `text`.
 
 ## 5. Evaluation method
@@ -39,8 +38,8 @@ The script `evaluate_chronorag.py` uses a standardized title-based question for 
 | Baseline chooses correct document family | 19/19 (100%) | For the standardized title-based queries only |
 | Baseline chooses latest target-family revision | 7/19 (36.8%) | Baseline often ranks the older version higher |
 | ChronoRAG chooses latest stored revision | 19/19 (100%) | Expected because the algorithm explicitly selects max timestamp within the candidate family |
-| Core/data regression checks | 66 passed, 0 failed | Includes data integrity, version logic, comparisons, input handling, and no-overlap query guard |
-| App-flow smoke checks | 15 passed, 0 failed | Exercises app branches with a mocked Streamlit API; not a real browser/UI test |
+| Core/data regression checks | 64 expected; rerun pending | Count reflects removal of demo-specific assertions; rerun the suite before submission. |
+| App-flow smoke checks | 14 expected; rerun pending | Uses a mocked Streamlit API; not a real browser/UI test. Rerun before submission. |
 | Known-case change-detection checks | 3/3 passed | Two positive text-difference examples and one unchanged-topic negative control; not a contradiction benchmark |
 | Botswana gathering-limit difference | Detected | Earlier stored text says >100; later stored text says >50 |
 | ChuChu TV ranking/statistics difference | Detected | Earlier and later revision text differs |
