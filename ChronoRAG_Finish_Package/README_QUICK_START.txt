@@ -7,6 +7,7 @@ CHRONORAG - QUICK START
 5. Evaluation results are saved to chronorag_evaluation_results.csv.
 
 The app uses TF-IDF and a version-aware latest-timestamp rule. It does not use an external LLM.
+The app also includes a `Fetch latest Wikipedia revisions` button. It uses the public Wikipedia API to append newly found revisions in the current session; download the refreshed CSV to preserve a copy. It does not automatically write refreshed data back to GitHub.
 The real dataset contains 38 stored revisions across 19 document families (two versions per family), not complete histories.
 The evaluation measures revision selection only. It does not measure contradiction-detection accuracy or prove that text differences are contradictions.
 

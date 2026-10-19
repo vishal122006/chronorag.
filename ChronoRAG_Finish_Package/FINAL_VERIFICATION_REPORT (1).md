@@ -2,12 +2,12 @@
 
 ## Verification status after the real-data-only change
 
-**Rerun required before submission.** The counts from the earlier package-review run are no longer current because the app and tests have changed. The updated suites are expected to contain 64 core/data checks, 14 mocked app-flow checks, and 3 predefined change cases, but those counts have not been executed in this session.
+**Rerun required before submission.** The counts from the earlier package-review run are no longer current because the app and tests have changed. The updated suites are expected to contain 66 core/data checks, 14 mocked app-flow checks, and 3 predefined change cases, but those counts have not been executed in this session.
 
 | Check | Result | What it verifies |
 |---|---:|---|
 | Python compilation | Rerun pending | Compile app, evaluation, and test scripts after the current source change |
-| Core/data regression suite | 64 expected; not rerun | Real dataset schema/integrity, standardized family lookup, version selection, comparison and input edge cases |
+| Core/data regression suite | 66 expected; not rerun | Real dataset schema/integrity, standardized family lookup, version selection, comparison and input edge cases |
 | App-flow smoke suite | 14 expected; not rerun | App branches using a mocked Streamlit API; not actual browser rendering |
 | Known-case change evaluation | 3 cases; rerun pending | Botswana changed text, ChuChu TV changed ranking text, Algeria unchanged-topic control |
 | Revision selection evaluation | 19 families | Baseline selected latest target-family revision in 7/19; ChronoRAG latest-stored-version rule selected latest in 19/19 |

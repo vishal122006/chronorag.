@@ -2,7 +2,7 @@ CHRONORAG FINAL CHECKLIST
 
 AUTOMATED CHECKS (one-click from the project folder)
 [ ] Run Run_Tests_Only.bat, or Install_and_Run.bat to test and launch the app
-[ ] After rerunning tests, confirm CHRONORAG_TEST_REPORT.txt says 64 checks passed; 0 failures
+[ ] After rerunning tests, confirm CHRONORAG_TEST_REPORT.txt says 66 checks passed; 0 failures
 [ ] After rerunning tests, confirm APP_FLOW_TEST_REPORT.txt says 14 checks passed; 0 failures
 [ ] Check chronorag_evaluation_results.csv exists and has 19 data rows
 [ ] Check CHANGE_DETECTION_EVALUATION.md says 3/3 predefined examples passed
@@ -13,6 +13,8 @@ AUTOMATED CHECKS (one-click from the project folder)
 
 BROWSER SMOKE TEST (real browser required)
 [ ] Confirm the included historical Wikipedia revision collection loads by default
+[ ] Click Fetch latest Wikipedia revisions and verify current revision IDs/timestamps appear
+[ ] Download the refreshed revision CSV and check it contains old and newly fetched revisions
 [ ] Select ChronoRAG version-aware retrieval
 [ ] Botswana query shows earlier >100 and later >50 gathering-limit text
 [ ] Algeria query shows no Algeria-specific difference in these two stored revisions

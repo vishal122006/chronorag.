@@ -18,12 +18,12 @@
 
 ## 3. System design
 
-The Streamlit interface loads the included historical Wikipedia revision collection by default, or an uploaded versioned CSV. The input is validated and normalized. Both strategies use TF-IDF scores to find the likely document family. Baseline returns the most similar revision; ChronoRAG selects the latest stored version in the candidate family. The app then displays the selected content and, where a version pair exists, compares the earlier and later text. Topic/section filtering uses keyword heuristics.
+The Streamlit interface loads the included historical Wikipedia revision collection by default, or an uploaded versioned CSV. A user-triggered refresh calls the public English Wikipedia Action API for each article family, checks its latest revision ID and timestamp, and appends newly discovered revisions while preserving the existing stored history. The refreshed data remains in session memory and can be downloaded as CSV; it is not persisted back to GitHub by the app. The input is validated and normalized. Both strategies use TF-IDF scores to find the likely document family. Baseline returns the most similar revision; ChronoRAG selects the latest stored version in the candidate family. The app then displays the selected content and, where a version pair exists, compares the earlier and later text. Topic/section filtering uses keyword heuristics.
 
 ## 4. Data
 
 - Real collection: 38 stored revision records from 19 Wikipedia article families.
-- The included real collection has two versions per family, rather than a complete revision history.
+- The included real collection starts with two stored versions per family, rather than a complete revision history. A manual live refresh can append newer current revisions.
 - Required CSV columns: `doc_id`, `title`, `version`, `effective_date`, `source`, `text`.
 
 ## 5. Evaluation method
@@ -56,6 +56,8 @@ The separate known-case change evaluation writes `change_detection_smoke_results
 ## 8. Limitations
 
 - The application uses TF-IDF and does not generate answers with an external LLM.
+- Live refresh depends on network access to the public Wikipedia API; failures are reported and existing records are retained.
+- Refreshed revisions are session-only until downloaded. They do not automatically update the repository or the deployed app's baseline CSV.
 - The dataset contains only two stored versions per article family.
 - Standardized title-based test queries may be easier than natural user questions.
 - Latest timestamp among stored versions does not guarantee the revision is current or authoritative.
