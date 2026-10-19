@@ -2,23 +2,23 @@ CHRONORAG FINAL CHECKLIST
 
 AUTOMATED CHECKS (one-click from the project folder)
 [ ] Run Run_Tests_Only.bat, or Install_and_Run.bat to test and launch the app
-[ ] Check CHRONORAG_TEST_REPORT.txt says 66 checks passed; 0 failures
-[ ] Check APP_FLOW_TEST_REPORT.txt says 15 checks passed; 0 failures
+[ ] After rerunning tests, confirm CHRONORAG_TEST_REPORT.txt says 64 checks passed; 0 failures
+[ ] After rerunning tests, confirm APP_FLOW_TEST_REPORT.txt says 14 checks passed; 0 failures
 [ ] Check chronorag_evaluation_results.csv exists and has 19 data rows
 [ ] Check CHANGE_DETECTION_EVALUATION.md says 3/3 predefined examples passed
 [ ] Check change_detection_smoke_results.csv was generated
 [ ] After the app is running, run Verify_Live_App.bat and confirm both HTTP health checks pass
 [ ] Note: app-flow tests stub Streamlit and are not actual browser tests
+[ ] Regenerate the test reports after code changes; placeholder reports in the repository are not test results
 
 BROWSER SMOKE TEST (real browser required)
-[ ] Select Real Wikipedia revisions
+[ ] Confirm the included historical Wikipedia revision collection loads by default
 [ ] Select ChronoRAG version-aware retrieval
 [ ] Botswana query shows earlier >100 and later >50 gathering-limit text
 [ ] Algeria query shows no Algeria-specific difference in these two stored revisions
 [ ] ChuChu TV query shows earlier/later ranking/statistics changes
 [ ] Switch Botswana question to Baseline and confirm revision 946148507
 [ ] Switch Botswana question to ChronoRAG and confirm revision 946149857
-[ ] Select Synthetic demo and confirm a demo question returns policy content
 [ ] Upload a versioned CSV with the six required columns and confirm it loads
 [ ] Upload a malformed CSV and confirm the app displays a readable error instead of crashing
 [ ] Submit a query with unrelated random words and confirm it warns when there is no lexical match
