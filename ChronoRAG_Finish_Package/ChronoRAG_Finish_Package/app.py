@@ -3,7 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 import difflib
+import json
 import re
+import urllib.parse
+import urllib.request
 
 import pandas as pd
 import streamlit as st
@@ -52,6 +55,121 @@ def load_documents() -> pd.DataFrame:
         raise FileNotFoundError(f"Real revision dataset not found: {REAL_DATA_PATH}")
     return normalize_documents(load_csv(str(REAL_DATA_PATH)))
 
+
+def fetch_latest_wikipedia_revision(title: str) -> dict[str, str]:
+    """Fetch the current revision text and metadata for one English Wikipedia page."""
+    params = {
+        "action": "query",
+        "prop": "revisions",
+        "titles": title,
+        "redirects": "1",
+        "rvlimit": "1",
+        "rvprop": "ids|timestamp|content",
+        "rvslots": "main",
+        "format": "json",
+        "formatversion": "2",
+    }
+    url = "https://en.wikipedia.org/w/api.php?" + urllib.parse.urlencode(params)
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": (
+                "ChronoRAG/1.0 (educational research prototype; "
+                "https://github.com/vishal122006/chronorag.)"
+            ),
+        },
+    )
+    with urllib.request.urlopen(request, timeout=20) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+
+    if payload.get("error"):
+        raise RuntimeError(payload["error"].get("info", "Wikipedia API returned an error"))
+
+    pages = payload.get("query", {}).get("pages", [])
+    if not pages or pages[0].get("missing"):
+        raise ValueError("Wikipedia page was not found")
+
+    page = pages[0]
+    revisions = page.get("revisions", [])
+    if not revisions:
+        raise ValueError("Wikipedia returned no readable revision")
+    revision = revisions[0]
+    main_slot = revision.get("slots", {}).get("main", {})
+    content = (
+        main_slot.get("content")
+        or main_slot.get("*")
+        or revision.get("content")
+        or revision.get("*")
+    )
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError("The latest revision has no readable page text")
+
+    return {
+        "title": str(page.get("title") or title),
+        "version": str(revision["revid"]),
+        "effective_date": str(revision["timestamp"]),
+        "text": content,
+    }
+
+
+def append_live_revision_if_new(
+    documents: pd.DataFrame, doc_id: str, revision: dict[str, str]
+) -> tuple[pd.DataFrame, bool]:
+    """Append a live revision to its existing document family, without duplicates."""
+    family = documents[documents["doc_id"].astype(str) == str(doc_id)]
+    if family.empty:
+        raise ValueError(f"Document family not found: {doc_id}")
+
+    revision_id = str(revision["version"])
+    if family["version"].astype(str).eq(revision_id).any():
+        return documents.copy(), False
+
+    template = family.sort_values("effective_date", ascending=False).iloc[0]
+    new_row = {
+        "doc_id": str(doc_id),
+        "title": str(template["title"]),
+        "version": revision_id,
+        "effective_date": pd.to_datetime(revision["effective_date"], utc=True, errors="raise"),
+        "source": "wikipedia_live_api",
+        "text": str(revision["text"]),
+    }
+    if not new_row["text"].strip():
+        raise ValueError("Wikipedia returned an empty revision")
+    return pd.concat(
+        [documents[REQUIRED_COLUMNS], pd.DataFrame([new_row])[REQUIRED_COLUMNS]],
+        ignore_index=True,
+    ), True
+
+
+def refresh_wikipedia_revisions(
+    documents: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Check the latest Wikipedia revision for each article family in the dataset."""
+    refreshed = normalize_documents(documents)
+    latest_rows = (
+        refreshed.sort_values("effective_date")
+        .groupby("doc_id", sort=False, as_index=False)
+        .tail(1)
+    )
+    stats: dict[str, Any] = {"checked": 0, "added": 0, "unchanged": 0, "errors": []}
+
+    for _, current in latest_rows.iterrows():
+        title = str(current["title"])
+        try:
+            live_revision = fetch_latest_wikipedia_revision(title)
+            refreshed, added = append_live_revision_if_new(
+                refreshed, str(current["doc_id"]), live_revision
+            )
+            stats["checked"] += 1
+            if added:
+                stats["added"] += 1
+            else:
+                stats["unchanged"] += 1
+        except Exception as exc:
+            stats["errors"].append(f"{title}: {str(exc)[:180]}")
+
+    return normalize_documents(refreshed), stats
 
 def retrieve_documents(query: str, docs: pd.DataFrame, top_k: int = 5) -> pd.DataFrame:
     """Transparent TF-IDF retrieval baseline."""
@@ -271,13 +389,24 @@ st.write(
 
 with st.sidebar:
     st.header("Document collection")
-    st.caption("Default dataset: historical Wikipedia revisions (38 stored revisions across 19 article families).")
+    st.caption(
+        "Base dataset: a stored snapshot of 38 Wikipedia revisions across 19 article families. "
+        "Use the refresh button to check Wikipedia for newer versions."
+    )
     uploaded_file = st.file_uploader("Or upload a versioned CSV", type=["csv"])
+    refresh_requested = st.button(
+        "Fetch latest Wikipedia revisions",
+        disabled=uploaded_file is not None,
+        help=(
+            "Checks the latest revision for each article family against the public Wikipedia API. "
+            "New versions remain in this session until you download the refreshed CSV."
+        ),
+    )
     mode = st.radio(
         "Retrieval strategy",
         ["Baseline RAG retrieval", "ChronoRAG version-aware retrieval"],
         index=1,
-        help="Baseline returns the highest-similarity revision. ChronoRAG identifies its document family and selects the latest stored revision.",
+        help="Baseline returns the highest-similarity revision. ChronoRAG identifies the matching document family and selects its latest stored timestamp.",
     )
     show_all = st.checkbox("Show all document versions", value=False)
 
@@ -286,11 +415,57 @@ try:
         documents = normalize_documents(pd.read_csv(uploaded_file, dtype=str).fillna(""))
         st.success(f"Loaded {len(documents)} uploaded document versions.")
     else:
-        documents = load_documents()
-        st.warning(
-            "Using the included real-data collection: 38 stored revision records across 19 Wikipedia article families. "
-            "Only two stored versions per page are included; this is not a complete revision history."
+        if "live_documents" not in st.session_state:
+            st.session_state["live_documents"] = load_documents()
+
+        if refresh_requested:
+            with st.spinner("Checking Wikipedia for the latest revisions..."):
+                refreshed_documents, refresh_stats = refresh_wikipedia_revisions(
+                    st.session_state["live_documents"]
+                )
+            st.session_state["live_documents"] = refreshed_documents
+            st.session_state["live_refresh_time"] = pd.Timestamp.now(tz="UTC").strftime(
+                "%Y-%m-%d %H:%M:%S UTC"
+            )
+            st.session_state["live_refresh_stats"] = refresh_stats
+
+        documents = normalize_documents(st.session_state["live_documents"])
+        st.info(
+            f"Loaded {len(documents)} revision records across "
+            f"{documents['doc_id'].nunique()} Wikipedia article families."
         )
+
+        refresh_stats = st.session_state.get("live_refresh_stats")
+        if refresh_stats is not None:
+            if refresh_stats["checked"] > 0:
+                st.success(
+                    f"Live refresh completed at {st.session_state['live_refresh_time']}: "
+                    f"checked {refresh_stats['checked']} pages, added "
+                    f"{refresh_stats['added']} new revisions, and found "
+                    f"{refresh_stats['unchanged']} already-current revisions."
+                )
+                st.download_button(
+                    "Download refreshed revision CSV",
+                    data=documents[REQUIRED_COLUMNS].to_csv(index=False).encode("utf-8"),
+                    file_name="real_documents_live_refresh.csv",
+                    mime="text/csv",
+                    key="download_refreshed_wikipedia_csv",
+                )
+            if refresh_stats["errors"]:
+                st.warning(
+                    "Some pages could not be refreshed. Existing records were kept. "
+                    + " | ".join(refresh_stats["errors"][:5])
+                )
+            if refresh_stats["checked"] == 0:
+                st.warning(
+                    "No Wikipedia pages could be refreshed in this attempt. "
+                    "The existing dataset remains available; check the deployment's network access and retry."
+                )
+        else:
+            st.caption(
+                "The included CSV is a fixed historical snapshot. Live changes are fetched only when you click "
+                "the refresh button; the refreshed data is not written back to GitHub automatically."
+            )
 except Exception as exc:
     st.error(f"Could not load documents: {exc}")
     st.stop()
