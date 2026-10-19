@@ -2,14 +2,14 @@
 
 **Previous test date:** 16 October 2026  
 **Package tested:** `ChronoRAG_Finish_Package`  
-**Post-removal validation status: PENDING.** This report predates the current source changes. Re-run `Run_Tests_Only.bat` before submission. The updated test code is expected to contain 64 core/data checks and 14 app-flow checks, plus the 3 known-case checks and 2 simulated HTTP checks; these expected counts have not been executed in this session.
+**Post-removal validation status: PENDING.** This report predates the current source changes. Re-run `Run_Tests_Only.bat` before submission. The updated test code is expected to contain 66 core/data checks and 14 app-flow checks, plus the 3 known-case checks and 2 simulated HTTP checks; these expected counts have not been executed in this session.
 
 ## Results
 
 | Test group | Result | Notes |
 |---|---:|---|
 | Python syntax compilation | Rerun pending | Compile app, evaluation scripts, and tests after the current source change. |
-| Core/data/retrieval regression | 64 expected; not rerun | Includes schema checks, real revision records, family selection, chronological selection, known text changes, malformed CSV handling, and topic comparison. |
+| Core/data/retrieval regression | 66 expected; not rerun | Includes schema checks, real revision records, family selection, chronological selection, known text changes, malformed CSV handling, and topic comparison. |
 | App-flow smoke tests | 14 expected; not rerun | Streamlit API is stubbed; these check app logic/control flow, not actual UI rendering. |
 | Known change-detection examples | 3 cases; rerun pending | Botswana changed text, Algeria unchanged-topic negative control for these two stored versions, and ChuChu TV ranking change. |
 | HTTP health-check utility | Prior simulated check: 2/2 | Verified against a simulated local HTTP server, not against a running Streamlit process; rerun if needed. |
