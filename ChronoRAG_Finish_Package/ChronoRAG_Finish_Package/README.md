@@ -6,10 +6,11 @@ ChronoRAG is a Streamlit research prototype for comparing ordinary similarity-ba
 
 ## Features
 
-- Load the included historical Wikipedia revision collection, or upload a versioned CSV.
+- Load the included historical Wikipedia revision collection, fetch current revisions from the public Wikipedia API, or upload a versioned CSV.
 - Upload a versioned CSV.
 - Compare **Baseline RAG retrieval** (highest TF-IDF similarity) with **ChronoRAG version-aware retrieval** (find the best-matching document family, then select its latest stored timestamp).
 - Review stored revision history and top retrieval results.
+- Fetch the current revision for each article family with a manual refresh button, append newly discovered revisions without replacing older history, and download the refreshed CSV.
 - Compare earlier and later stored text, with heuristic topic/section filtering.
 - Run reproducible regression tests, revision-selection evaluation, and a small known-case text-change evaluation.
 
@@ -26,7 +27,7 @@ Uploaded CSV files must contain these columns:
 | `source` | Source or provenance label |
 | `text` | Document content for that revision |
 
-The included real-data collection has 38 revision records across 19 Wikipedia article families (two stored versions per family). These are not complete histories.
+The included real-data collection is a fixed snapshot with 38 revision records across 19 Wikipedia article families (two stored versions per family). Use **Fetch latest Wikipedia revisions** to check the live English Wikipedia API for newer versions. Newly fetched revisions remain in Streamlit session memory until the refreshed CSV is downloaded; they are not committed back to GitHub automatically. The snapshot and refreshed results are not complete revision histories.
 
 ## Setup on Windows
 
@@ -77,7 +78,7 @@ After `Install_and_Run.bat` has started Streamlit, use `Verify_Live_App.bat` to 
 
 ## Suggested browser smoke test
 
-Use the included Wikipedia revision collection with **ChronoRAG version-aware retrieval**, then try:
+Use the included Wikipedia revision collection with **ChronoRAG version-aware retrieval**, or click **Fetch latest Wikipedia revisions** first, then try:
 
 1. `What changed between versions of the COVID-19 pandemic in Africa article regarding Botswana?`
    - Expected: text difference from “more than 100 people” to “more than 50 people”.
