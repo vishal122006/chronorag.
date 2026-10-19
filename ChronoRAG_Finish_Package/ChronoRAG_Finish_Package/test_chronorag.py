@@ -24,7 +24,7 @@ REQUIRED = ["doc_id", "title", "version", "effective_date", "source", "text"]
 FUNCTIONS = {
     "normalize_documents", "retrieve_documents", "has_relevant_match", "find_candidate_group",
     "choose_latest_version", "clean_wikitext", "sentence_chunks",
-    "compare_versions", "split_into_sections", "topic_terms_from_question",
+    "compare_versions", "append_live_revision_if_new", "split_into_sections", "topic_terms_from_question",
     "section_passages_for_topic", "compare_topic_sections",
 }
 
@@ -68,6 +68,31 @@ def run() -> int:
     check(not real.duplicated().any(), "real dataset has no exact duplicate rows", results)
     check(not real.duplicated(["doc_id", "version"]).any(), "real dataset has no duplicate family/version keys", results)
     check(real.effective_date.notna().all() and real.text.str.strip().ne("").all(), "all real revisions have valid timestamps and non-empty text", results)
+
+    # Live-refresh merge tests use a real article family as the base fixture.
+    latest = real[real.title.eq("COVID-19 pandemic in Africa")].sort_values("effective_date").iloc[-1]
+    existing_revision = {
+        "version": str(latest.version),
+        "effective_date": str(latest.effective_date),
+        "text": str(latest.text),
+    }
+    unchanged_docs, was_added = funcs["append_live_revision_if_new"](
+        real, str(latest.doc_id), existing_revision
+    )
+    check(not was_added and len(unchanged_docs) == len(real),
+          "live refresh does not duplicate an already stored revision ID", results)
+
+    new_revision = {
+        "version": "TEST-ONLY-NEW-REVISION",
+        "effective_date": "2030-01-01T00:00:00Z",
+        "text": str(latest.text) + " Test-only content for merge validation.",
+    }
+    extended_docs, was_added = funcs["append_live_revision_if_new"](
+        real, str(latest.doc_id), new_revision
+    )
+    check(was_added and len(extended_docs) == len(real) + 1
+          and extended_docs.iloc[-1]["source"] == "wikipedia_live_api",
+          "live refresh appends an unseen revision while preserving previous history", results)
     # Each title-based standard query should identify the intended family.
     baseline_latest_count = 0
     baseline_correct_family_count = 0
